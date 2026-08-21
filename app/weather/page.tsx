@@ -3,16 +3,23 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 import { model } from "@/lib/ai";
-import { weatherTool } from "./tools";
+import { timeTool, weatherTool } from "./tools";
 
 export default async function WeatherPage() {
   const result = await generateText({
     model,
-    prompt: "What's the current weather in Srinagar(India) and Delhi(India)?, also compaire the weather of both cities and tell me which city is better to visit right now.",
+    prompt: "What is the current time and weather in Srinagar right now?",
     tools: {
       getWeather: weatherTool,
+      getTime: timeTool,
     },
     stopWhen: stepCountIs(10),
+  });
+
+  result.steps.forEach((step, index) => {
+    console.log(`Step ${index}:`);
+    console.log(step.toolCalls);
+    console.log(step.toolResults);
   });
 
   return (

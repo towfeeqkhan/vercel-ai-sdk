@@ -47,3 +47,64 @@ export const weatherTool = tool({
     };
   },
 });
+
+export const timeTool = tool({
+  description: "Get the current time and date for a given timezone or city.",
+
+  inputSchema: z.object({
+    timeZone: z
+      .string()
+      .describe(
+        "IANA timezone string (e.g., 'Asia/Kolkata', 'America/New_York', 'Europe/London') or city name.",
+      ),
+  }),
+
+  execute: async ({ timeZone }) => {
+    try {
+      let resolvedTimeZone = timeZone.trim();
+
+      const aliases: Record<string, string> = {
+        srinagar: "Asia/Kolkata",
+        delhi: "Asia/Kolkata",
+        mumbai: "Asia/Kolkata",
+        india: "Asia/Kolkata",
+        london: "Europe/London",
+        "new york": "America/New_York",
+      };
+
+      const normalizedInput = resolvedTimeZone.toLowerCase();
+      if (aliases[normalizedInput]) {
+        resolvedTimeZone = aliases[normalizedInput];
+      }
+
+      const now = new Date();
+
+      const timeFormatter = new Intl.DateTimeFormat("en-US", {
+        timeZone: resolvedTimeZone,
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+      });
+
+      const dateFormatter = new Intl.DateTimeFormat("en-US", {
+        timeZone: resolvedTimeZone,
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+
+      return {
+        timeZone: resolvedTimeZone,
+        formattedTime: timeFormatter.format(now),
+        formattedDate: dateFormatter.format(now),
+        isoString: now.toISOString(),
+      };
+    } catch {
+      throw new Error(
+        `Invalid timezone provided: '${timeZone}'. Please pass a valid IANA timezone name.`,
+      );
+    }
+  },
+});
